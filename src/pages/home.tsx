@@ -11,7 +11,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('francaise');
   const [selectedSubCategory, setSelectedSubCategory] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
-
+console.log(t('category.french'));
   const categories = [
     { id: 'francaise', name: t('category.french'), icon: '🇫🇷', active: true },
     { id: 'italienne', name: t('category.italian'), icon: '🇮🇹', active: false },
