@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, MapPin, Heart, X, Calendar, ChevronDown } from 'lucide-react';
+import { Star, MapPin, Heart, X, Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,8 @@ export default function Restaurants() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubCategory, setSelectedSubCategory] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
 
   const categories = [
     { id: 'francaise', name: t('category.french'), icon: '🇫🇷', active: true },
@@ -54,6 +56,21 @@ export default function Restaurants() {
     return serviceTypes[Math.floor(Math.random() * serviceTypes.length)];
   };
 
+  const handleScroll = (direction: 'left' | 'right') => {
+    const container = document.getElementById('categories-scroll');
+    if (container) {
+      const scrollAmount = direction === 'left' ? -200 : 200;
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      
+      // Update arrow visibility after scroll
+      setTimeout(() => {
+        const { scrollLeft, scrollWidth, clientWidth } = container;
+        setShowLeftArrow(scrollLeft > 0);
+        setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+      }, 300);
+    }
+  };
+
   // Filter restaurants based on selected category
   const filteredRestaurants = restaurants.filter(restaurant => {
     if (!selectedCategory) return true;
@@ -70,31 +87,60 @@ export default function Restaurants() {
       {/* Categories Navigation */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-4">
-          <div className="flex items-center space-x-8 overflow-x-auto py-4 scrollbar-hide">
-            {categories.map((category) => (
+          <div className="relative">
+            {/* Boutons de navigation - Version Mobile */}
+            {showLeftArrow && (
               <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`flex flex-col items-center space-y-2 min-w-max px-3 py-2 rounded-lg transition-colors ${
-                  category.id === selectedCategory
-                    ? 'text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
+                onClick={() => handleScroll('left')}
+                className="md:hidden absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 border border-gray-200 dark:border-gray-700"
               >
-                <span className="text-2xl">{category.icon}</span>
-                <span className="text-sm font-medium whitespace-nowrap">{category.name}</span>
-                {category.id === selectedCategory && (
-                  <div className="w-full h-0.5 bg-gray-900 dark:bg-white rounded-full"></div>
-                )}
+                <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               </button>
-            ))}
-            <div className="flex items-center space-x-2 min-w-max px-3">
-              <Heart className="h-5 w-5 text-gray-400" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('category.favorites')}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+            )}
+            
+            {showRightArrow && (
+              <button
+                onClick={() => handleScroll('right')}
+                className="md:hidden absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 border border-gray-200 dark:border-gray-700"
+              >
+                <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              </button>
+            )}
+            
+                         <div 
+               id="categories-scroll"
+               className="flex items-center space-x-8 overflow-x-auto py-4 scrollbar-hide md:px-0 px-12"
+               onScroll={(e) => {
+                 const { scrollLeft, scrollWidth, clientWidth } = e.currentTarget;
+                 setShowLeftArrow(scrollLeft > 0);
+                 setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+               }}
+             >
+               {categories.map((category) => (
+                 <button
+                   key={category.id}
+                   onClick={() => setSelectedCategory(category.id)}
+                   className={`flex flex-col items-center space-y-2 min-w-max px-3 py-2 rounded-lg transition-colors ${
+                     category.id === selectedCategory
+                       ? 'text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700'
+                       : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
+                   }`}
+                 >
+                   <span className="text-2xl">{category.icon}</span>
+                   <span className="text-sm font-medium whitespace-nowrap">{category.name}</span>
+                   {category.id === selectedCategory && (
+                     <div className="w-full h-0.5 bg-gray-900 dark:bg-white rounded-full"></div>
+                   )}
+                 </button>
+               ))}
+               <div className="flex items-center space-x-2 min-w-max px-3">
+                 <Heart className="h-5 w-5 text-gray-400" />
+                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('category.favorites')}</span>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
 
       {/* Sub-categories */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
