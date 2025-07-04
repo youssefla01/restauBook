@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Search, ArrowRight, Star, Users, Clock, MapPin } from 'lucide-react';
+import { Search, ArrowRight, Star, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/language-context';
 
