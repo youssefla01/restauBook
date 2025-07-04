@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, MapPin, Heart, X, Calendar } from 'lucide-react';
+import { Star, MapPin, Heart, X, Calendar, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -99,12 +99,13 @@ export default function Restaurants() {
       {/* Sub-categories */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-4">
-          <div className="flex items-center space-x-6 py-3">
+          {/* Version Desktop */}
+          <div className="hidden md:flex justify-center items-center gap-6 py-3">
             {subCategories.map((subCat) => (
               <button
                 key={subCat}
                 onClick={() => setSelectedSubCategory(subCat === selectedSubCategory ? '' : subCat)}
-                className={`text-sm font-medium px-3 py-1 rounded-full transition-colors ${
+                className={`text-sm font-medium px-3 py-1 rounded-full transition-colors whitespace-nowrap ${
                   subCat === selectedSubCategory
                     ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
                     : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -121,6 +122,50 @@ export default function Restaurants() {
                 <X className="h-4 w-4" />
                 <span>{t('subcategory.reset_filters')}</span>
               </button>
+            )}
+          </div>
+          
+          {/* Version Mobile - Dropdown */}
+          <div className="md:hidden py-3">
+            <div className="relative">
+              <button
+                onClick={() => setSelectedSubCategory(selectedSubCategory ? '' : 'dropdown')}
+                className="flex items-center justify-between w-full max-w-sm mx-auto px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-200 text-sm"
+              >
+                <span className="font-medium truncate">
+                  {selectedSubCategory && selectedSubCategory !== 'dropdown' ? selectedSubCategory : 'Sous-catégories'}
+                </span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${selectedSubCategory === 'dropdown' ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {selectedSubCategory === 'dropdown' && (
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
+                  {subCategories.map((subCat) => (
+                    <button
+                      key={subCat}
+                      onClick={() => {
+                        setSelectedSubCategory(subCat);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                    >
+                      {subCat}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Reset button pour mobile */}
+            {selectedSubCategory && selectedSubCategory !== 'dropdown' && (
+              <div className="flex justify-center mt-3">
+                <button
+                  onClick={() => setSelectedSubCategory('')}
+                  className="flex items-center space-x-1 text-sm text-pink-500 hover:text-pink-600"
+                >
+                  <X className="h-4 w-4" />
+                  <span>{t('subcategory.reset_filters')}</span>
+                </button>
+              </div>
             )}
           </div>
         </div>

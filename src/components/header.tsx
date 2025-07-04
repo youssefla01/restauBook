@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useTheme } from '@/components/theme-provider';
 import { useLanguage } from '@/contexts/language-context';
 import { frenchRegions } from '@/data/regions';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -20,6 +20,14 @@ export default function Header() {
   const { theme, setTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [regionQuery, setRegionQuery] = useState('');
+  const [showRegionList, setShowRegionList] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const regionInputRef = useRef(null);
+  const allRegionsAndCities = frenchRegions.flatMap(region => [region.name, ...region.cities]);
+  const filteredRegions = regionQuery
+    ? allRegionsAndCities.filter(item => item.toLowerCase().includes(regionQuery.toLowerCase()))
+    : allRegionsAndCities;
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -132,39 +140,113 @@ export default function Header() {
         {/* Search Bar - Only on restaurants page */}
         {!isLanding && (
           <div className="pb-4">
-            <div className="flex items-center space-x-4 max-w-4xl mx-auto">
+            {/* Version Desktop */}
+            <div className="hidden md:flex items-center space-x-4 max-w-4xl mx-auto">
               <div className="flex-1 relative">
                 <Input
                   type="text"
-                  placeholder={t('header.search_category')}
+                  placeholder="Rechercher un restaurant..."
                   className="h-12 pl-4 pr-10 rounded-full border-gray-300 dark:border-gray-600 focus:border-gray-400 dark:focus:border-gray-500 focus:ring-0 dark:bg-gray-800 dark:text-white"
                 />
-                <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-pink-400" />
               </div>
+              {/* Autocomplete Région/Ville */}
               <div className="flex-1 relative">
-                <Select>
-                  <SelectTrigger className="h-12 rounded-full border-gray-300 dark:border-gray-600 focus:border-gray-400 dark:focus:border-gray-500 dark:bg-gray-800 dark:text-white">
-                    <SelectValue placeholder={t('header.search_location')} />
-                  </SelectTrigger>
-                  <SelectContent className="dark:bg-gray-800 dark:border-gray-600">
-                    {frenchRegions.map((region) => (
-                      <div key={region.id}>
-                        <SelectItem value={region.id} className="font-semibold dark:text-white">
-                          {region.name}
-                        </SelectItem>
-                        {region.cities.map((city) => (
-                          <SelectItem key={`${region.id}-${city}`} value={city} className="pl-6 dark:text-gray-300">
-                            {city}
-                          </SelectItem>
-                        ))}
+                <Input
+                  type="text"
+                  ref={regionInputRef}
+                  value={regionQuery}
+                  onChange={e => { setRegionQuery(e.target.value); setShowRegionList(true); }}
+                  onFocus={() => setShowRegionList(true)}
+                  onBlur={() => setTimeout(() => setShowRegionList(false), 150)}
+                  placeholder="Région / Ville"
+                  className="h-12 pl-4 pr-10 rounded-full border-gray-300 dark:border-gray-600 focus:border-gray-400 dark:focus:border-gray-500 focus:ring-0 dark:bg-gray-800 dark:text-white"
+                  autoComplete="off"
+                />
+                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none">
+                  <Search />
+                </span>
+                {showRegionList && filteredRegions.length > 0 && (
+                  <div className="absolute z-10 mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-56 overflow-auto">
+                    {filteredRegions.map((item, idx) => (
+                      <div
+                        key={item + idx}
+                        className="px-4 py-2 cursor-pointer hover:bg-pink-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                        onMouseDown={() => { setRegionQuery(item); setShowRegionList(false); }}
+                      >
+                        {item}
                       </div>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                )}
               </div>
-              <Button size="lg" className="h-12 w-12 rounded-full bg-pink-400 hover:bg-pink-500 text-white p-0">
-                <Search className="h-5 w-5" />
-              </Button>
+            </div>
+
+            {/* Version Mobile */}
+            <div className="md:hidden px-4">
+              <div className="relative">
+                <div 
+                  className="w-full h-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full flex items-center px-4 cursor-pointer shadow-sm"
+                  onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                >
+                  <Search className="h-5 w-5 text-gray-400 mr-3" />
+                  <span className="text-gray-500 dark:text-gray-400">Commencer une recherche</span>
+                  <ChevronDown className={`ml-auto h-4 w-4 text-gray-400 transition-transform ${mobileSearchOpen ? 'rotate-180' : ''}`} />
+                </div>
+                
+                {/* Dropdown */}
+                {mobileSearchOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-4 z-50 animate-slideDown">
+                    {/* Champs de recherche */}
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <Input
+                          type="text"
+                          placeholder="Commencer une recherche"
+                          className="h-12 pl-4 pr-10 rounded-xl border-2 border-blue-400 focus:border-blue-500 focus:ring-0 dark:bg-gray-800 dark:text-white"
+                          autoFocus
+                        />
+                        <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      </div>
+                      
+                      <div className="relative">
+                        <select className="w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 appearance-none">
+                          <option>Catégorie de service</option>
+                          <option>Restaurant traditionnel</option>
+                          <option>Bistrot</option>
+                          <option>Brasserie</option>
+                          <option>Restaurant gastronomique</option>
+                          <option>Cuisine du monde</option>
+                          <option>Fast casual</option>
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
+                      
+                      <div className="relative">
+                        <select className="w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 appearance-none">
+                          <option>Région / Ville</option>
+                          {frenchRegions.map((region) => (
+                            <optgroup key={region.id} label={region.name}>
+                              {region.cities.map((city) => (
+                                <option key={city} value={city}>{city}</option>
+                              ))}
+                            </optgroup>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
+                      
+                      <Button 
+                        className="w-full h-12 bg-pink-500 hover:bg-pink-600 text-white rounded-xl text-base font-medium mt-4"
+                        onClick={() => setMobileSearchOpen(false)}
+                      >
+                        <Search className="h-5 w-5 mr-2" />
+                        Rechercher
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
