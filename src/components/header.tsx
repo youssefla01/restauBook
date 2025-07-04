@@ -2,7 +2,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { Search, Globe, Moon, Sun, User, ChevronDown, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTheme } from '@/components/theme-provider';
 import { useLanguage } from '@/contexts/language-context';
 import { frenchRegions } from '@/data/regions';
